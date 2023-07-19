@@ -113,9 +113,8 @@ void Sub(int* a, int* b, int* res, int length)
 	}
 }
 
-int** GenerateT(int A[4][4], int s[2][4], int e[2][4])
+void GenerateT(int A[4][4], int s[2][4], int e[2][4], int t[2][4])
 {
-	int** t = (int**)malloc(sizeof(int*) * 2);
 
 	for (int i = 0; i < 4; i+=2)
 	{
@@ -146,10 +145,8 @@ int** GenerateT(int A[4][4], int s[2][4], int e[2][4])
 
 		int* temp = AddVectors(addedRes, e[i / 2], 4);
 		free(addedRes);
-		t[i / 2] = temp;
+		memcpy(t[i / 2], temp, sizeof(int) * 4);
 	}
-
-	return t;
 }
 
 void PrintPoly(int* a, int length)
@@ -161,13 +158,13 @@ void PrintPoly(int* a, int length)
 	printf("\r\n");
 }
 
-void Encrypt(int A[2][4], int** t, int r[2][4], int e1[2][4], int e2[4], int length, int u[2][4], int v[4], int* data)
+void Encrypt(int A[2][4], int t[2][4], int r[2][4], int e1[2][4], int e2[4], int length, int u[2][4], int v[4], int* data)
 {
 	// Transform the M value
 	int q = 9;
-	int dataLength = length - length / 2;
+	int maxLengthPoly = length * 2 - 1;
 
-	for (int i = 0; i < dataLength; i++){
+	for (int i = 0; i < length; i++){
 		data[i] *= -q;
 	}
 
@@ -175,7 +172,7 @@ void Encrypt(int A[2][4], int** t, int r[2][4], int e1[2][4], int e2[4], int len
 	PrintPoly(data, 4);
 
 	// Calculate u
-	for (int i = 0; i < dataLength / 2; i++){
+	for (int i = 0; i < length / 2; i++){
 		int* res1 = multiply(A[i], r[0]);
 		int* res2 = multiply(A[i + 2], r[1]);
 
@@ -185,7 +182,7 @@ void Encrypt(int A[2][4], int** t, int r[2][4], int e1[2][4], int e2[4], int len
 		printf("Res2: \r\n");
 		PrintPoly(res2, 7);
 
-		int* addRes = AddVectors(res1, res2, length);
+		int* addRes = AddVectors(res1, res2, maxLengthPoly);
 
 		printf("Added Res: \r\n");
 		PrintPoly(addRes, 7);
@@ -195,7 +192,7 @@ void Encrypt(int A[2][4], int** t, int r[2][4], int e1[2][4], int e2[4], int len
 		printf("After Reduction: \r\n");
 		PrintPoly(addRes, 7);
 
-		for (int j = 0; j < dataLength; ++j){
+		for (int j = 0; j < length; ++j){
 			u[i][j] = addRes[j];
 		}
 		memcpy(u[i], addRes, sizeof(int) * sizeof(addRes));
@@ -207,11 +204,11 @@ void Encrypt(int A[2][4], int** t, int r[2][4], int e1[2][4], int e2[4], int len
 	}
 
 	// Add to u
-	int* temp1 = AddVectors(u[0], e1[0], dataLength);
+	int* temp1 = AddVectors(u[0], e1[0], length);
 	printf("After error Add: \r\n");
-	PrintPoly(temp1, dataLength);
+	PrintPoly(temp1, length);
 
-	int* temp2 = AddVectors(u[1], e1[1], dataLength);
+	int* temp2 = AddVectors(u[1], e1[1], length);
 
 	for (int i = 0; i < 4; i++){
 		u[0][i] = temp1[i];
@@ -223,8 +220,8 @@ void Encrypt(int A[2][4], int** t, int r[2][4], int e1[2][4], int e2[4], int len
 
 	// print u
 	printf("U values:\r\n");
-	PrintPoly(u[0], dataLength);
-	PrintPoly(u[1], dataLength);
+	PrintPoly(u[0], length);
+	PrintPoly(u[1], length);
 
 
 	// generate v now

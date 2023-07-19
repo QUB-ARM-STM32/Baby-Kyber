@@ -112,7 +112,9 @@ int main(void)
   int S[2][4] = { { 0, 1, -1, -1 }, { 0, -1, 0, -1 } };
   int e[2][4] = { { 0, 0, 1, 0 }, { 0, -1, 1, 0 } };
 
-  int** t = GenerateT(A, S, e);
+  int t[2][4] = {0};
+
+  GenerateT(A, S, e, t);
 
   PrintPoly(t[0], 4);
   PrintPoly(t[1], 4);
@@ -128,7 +130,7 @@ int main(void)
 
   int data[4] = { 1, 1, 0, 1 };
 
-  Encrypt(A, t, r, e1, e2, 7, u, v, data);
+  Encrypt(A, t, r, e1, e2, 4, u, v, data);
 
   printf("u: \r\n");
   PrintPoly(u[0], 4);
